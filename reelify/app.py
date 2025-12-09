@@ -77,7 +77,7 @@ class User(UserMixin):
     def get_id(self):
         return str(self.id)
 
-
+app.config["JSON_AS_ASCII"] = False
 # Simple in-memory user store
 _users_by_username = {
     "admin": User(
