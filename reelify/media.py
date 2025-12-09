@@ -249,7 +249,7 @@ class SDXLImageGenerator:
 
         if len(scenes) < count:
             try:
-                model = genai.GenerativeModel("gemini-2.0-flash")
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 g_prompt = f"""
 Create exactly {count} short visual-only scene lines (<= 16 words).
 - Vertical-friendly, centered subject, medium/tight shot
