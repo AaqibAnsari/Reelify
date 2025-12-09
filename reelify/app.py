@@ -124,7 +124,7 @@ if USE_LLAMA:
     story_generator = LlamaStoryGenerator(model_name=os.environ.get("LLAMA_MODEL", "llama3.1:8b"))
 else:
     # Prefer Gemini on Render
-    story_generator = GeminiStoryGenerator(model_name=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash"))
+    story_generator = GeminiStoryGenerator(model_name=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
 
 translator = FacebookUrduTranslator()
 
