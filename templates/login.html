@@ -1,0 +1,742 @@
+<!-- reelify/templates/login.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Login - Reelify</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Fonts & Icons (same as main app) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Optional: your global CSS, if you have it -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <style>
+    :root {
+      /* Dark Palette (for consistency if you ever toggle later) */
+      --dark-bg-primary:#0B0D17;--dark-bg-secondary:#151825;--dark-bg-tertiary:#1E2235;
+      --dark-surface:#252944;--dark-surface-hover:#2D3148;
+      --dark-text-primary:#FFFFFF;--dark-text-secondary:#B8BCC8;--dark-text-muted:#7A7F8A;
+      --dark-border:rgba(255,255,255,0.08);--dark-border-light:rgba(255,255,255,0.04);
+
+      /* Light Palette (aligned with main app) */
+      --light-bg-primary:#FAFBFC;--light-bg-secondary:#F1F3F4;--light-bg-tertiary:#E8EAED;
+      --light-surface:#FFFFFF;--light-surface-soft:#FFFFFF;
+      --light-text-primary:#1A1A1A;--light-text-secondary:#5F6368;--light-text-muted:#9AA0A6;
+      --light-border:rgba(0,0,0,0.08);--light-border-light:rgba(0,0,0,0.04);
+
+      --primary:#6366F1;--primary-light:#818CF8;--primary-dark:#4F46E5;
+      --secondary:#14B8A6;--accent:#F59E0B;
+      --gradient-primary:linear-gradient(135deg,#6366F1 0%,#8B5CF6 100%);
+      --gradient-brand:linear-gradient(135deg,#6366F1 0%,#14B8A6 50%,#F59E0B 100%);
+      --gradient-hot:linear-gradient(135deg,#F59E0B 0%,#EF4444 50%,#6366F1 100%);
+
+      --font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-family-display:'Space Grotesk','Inter',sans-serif;
+
+      --radius-lg:.75rem;--radius-xl:1rem;--radius-2xl:1.5rem;--radius-full:9999px;
+      --shadow-xl:0 20px 25px -5px rgba(15,23,42,.15),0 10px 10px -5px rgba(15,23,42,.12);
+      --duration-150:150ms;--duration-200:200ms;--duration-300:300ms;--duration-600:600ms;
+      --ease-out:cubic-bezier(0,0,0.2,1);
+    }
+
+    /* Light theme as default for login */
+    [data-theme="light"] {
+      --bg-primary:var(--light-bg-primary);
+      --bg-secondary:var(--light-bg-secondary);
+      --surface:var(--light-surface);
+      --surface-soft:var(--light-surface-soft);
+      --text-primary:var(--light-text-primary);
+      --text-secondary:var(--light-text-secondary);
+      --text-muted:var(--light-text-muted);
+      --border:var(--light-border);
+      --border-light:var(--light-border-light);
+    }
+
+    /* (Kept for possible future dark toggle, not used right now) */
+    [data-theme="dark"] {
+      --bg-primary:var(--dark-bg-primary);
+      --bg-secondary:var(--dark-bg-secondary);
+      --surface:var(--dark-surface);
+      --surface-soft:rgba(21,24,37,0.85);
+      --text-primary:var(--dark-text-primary);
+      --text-secondary:var(--dark-text-secondary);
+      --text-muted:var(--dark-text-muted);
+      --border:var(--dark-border);
+      --border-light:var(--dark-border-light);
+    }
+
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html { font-size:16px; -webkit-font-smoothing:antialiased; }
+    body {
+      font-family:var(--font-family);
+      background:var(--bg-primary);
+      color:var(--text-primary);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:1.5rem;
+      position:relative;
+      overflow:hidden;
+      animation:fadeInBody .5s ease-out;
+    }
+
+    /* Subtle grid background like main app */
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:radial-gradient(circle at 1px 1px,var(--border-light) 1px,transparent 0);
+      background-size:20px 20px;
+      opacity:0.25;
+      pointer-events:none;
+      z-index:-2;
+    }
+
+    /* Gradient blobs */
+    .bg-blob {
+      position:fixed;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      filter:blur(70px);
+      opacity:0.45;
+      z-index:-1;
+      animation:floatBlob 12s ease-in-out infinite;
+    }
+    .bg-blob.blob-1 {
+      top:-120px;
+      left:-80px;
+      background:radial-gradient(circle,#6366F1 0%,transparent 60%);
+      animation-delay:0s;
+    }
+    .bg-blob.blob-2 {
+      bottom:-140px;
+      right:-80px;
+      background:radial-gradient(circle,#14B8A6 0%,transparent 60%);
+      animation-delay:2s;
+    }
+
+    /* Header (matches app header brand) */
+    .auth-header {
+      width:100%;
+      max-width:640px;
+      margin:0 auto 1.75rem auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      animation:slideDown .6s var(--ease-out);
+    }
+
+    .brand {
+      display:flex;
+      flex-direction:column;
+      gap:.25rem;
+    }
+
+    .logo {
+      font-family:var(--font-family-display);
+      font-size:2rem;
+      font-weight:800;
+      background:var(--gradient-brand);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      letter-spacing:-.03em;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* subtle logo shine */
+    .logo::after {
+      content:'';
+      position:absolute;
+      top:0;
+      left:-120%;
+      width:50%;
+      height:100%;
+      background:linear-gradient(120deg,transparent,rgba(255,255,255,0.6),transparent);
+      transform:skewX(-20deg);
+      animation:logoShine 4s infinite;
+    }
+
+    .tagline {
+      font-size:.8rem;
+      color:var(--text-muted);
+      font-weight:500;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .auth-meta {
+      text-align:right;
+      font-size:.75rem;
+      color:var(--text-muted);
+    }
+    .auth-meta span {
+      display:block;
+    }
+    .auth-meta strong {
+      color:var(--primary-dark);
+      font-weight:600;
+    }
+
+    /* Login card */
+    .login-shell {
+      width:100%;
+      max-width:540px;
+    }
+
+    .login-card {
+      background:var(--surface);
+      border-radius:var(--radius-2xl);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow-xl);
+      padding:2.25rem 2.5rem 2.2rem;
+      backdrop-filter:blur(26px);
+      position:relative;
+      overflow:hidden;
+      animation:cardEnter .5s var(--ease-out) .07s both;
+    }
+
+    .login-card::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 0 0,rgba(99,102,241,0.12),transparent 55%);
+      opacity:.9;
+      pointer-events:none;
+    }
+
+    .login-card-inner {
+      position:relative;
+      z-index:1;
+    }
+
+    .login-title {
+      font-family:var(--font-family-display);
+      font-size:1.5rem;
+      font-weight:700;
+      margin-bottom:.4rem;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+    }
+    .login-title-icon {
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      background:var(--gradient-primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.95rem;
+      color:#fff;
+      box-shadow:0 0 0 1px rgba(255,255,255,0.7);
+      animation:pulseSoft 2.4s ease-in-out infinite;
+    }
+
+    .login-subtitle {
+      font-size:.86rem;
+      color:var(--text-secondary);
+      margin-bottom:.75rem;
+    }
+
+    /* 🔥 Hero punchline – UNIQUE ANIMATION & FONT SCHEME */
+    .hero-punchline {
+      margin-bottom:1.8rem;
+      font-size:1rem;
+      line-height:1.6;
+      color:var(--text-secondary);
+      max-width:100%;
+    }
+
+    .hero-line-main {
+      display:inline-block;
+      position:relative;
+      font-family:var(--font-family-display);
+      font-size:1.05rem;
+      font-weight:600;
+      letter-spacing:.02em;
+      overflow:hidden;
+      /* reveal the text smoothly, no caret */
+      -webkit-clip-path:inset(0 100% 0 0);
+      clip-path:inset(0 100% 0 0);
+      animation:typingReveal 2.6s ease-out .2s forwards;
+    }
+
+    .hero-accent-word {
+      background:var(--gradient-hot);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      position:relative;
+      font-weight:700;
+    }
+
+    .hero-accent-word::after {
+      content:'';
+      position:absolute;
+      left:0;
+      bottom:-4px;
+      height:2px;
+      width:0;
+      background:var(--gradient-hot);
+      border-radius:999px;
+      animation:underlineLoop 2.4s ease-in-out 3.0s infinite;
+    }
+
+    .hero-pulse-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      margin-top:.55rem;
+      padding:.35rem .8rem;
+      border-radius:999px;
+      background:rgba(99,102,241,0.06);
+      border:1px dashed rgba(99,102,241,0.45);
+      font-size:.78rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--primary-dark);
+      animation:heroPillPulse 2.3s ease-in-out infinite;
+    }
+
+    .hero-pulse-pill i {
+      font-size:.8rem;
+    }
+
+    @media (max-width: 480px) {
+      /* On tiny screens, just fade the text in to avoid any weirdness */
+      .hero-line-main {
+        -webkit-clip-path:none;
+        clip-path:none;
+        animation:fadeUp .4s var(--ease-out) .2s both;
+      }
+    }
+
+    /* Env badge */
+    .badge-env {
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.25rem .6rem;
+      border-radius:999px;
+      font-size:.7rem;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      background:rgba(255,255,255,0.9);
+      border:1px solid rgba(148,163,184,0.7);
+      color:var(--text-secondary);
+      margin-bottom:1rem;
+      animation:fadeUp .4s var(--ease-out) .08s both;
+    }
+    .badge-dot {
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#22c55e;
+      box-shadow:0 0 0 4px rgba(34,197,94,0.3);
+      animation:badgePulse 1.6s ease-out infinite;
+    }
+
+    /* Error message */
+    .error {
+      background:rgba(239,68,68,0.06);
+      border:1px solid rgba(239,68,68,0.55);
+      border-radius:var(--radius-lg);
+      padding:.55rem .75rem;
+      margin-bottom:1rem;
+      font-size:.8rem;
+      color:#b91c1c;
+      display:flex;
+      align-items:flex-start;
+      gap:.55rem;
+      animation:fadeUp .35s var(--ease-out);
+    }
+    .error i {
+      margin-top:2px;
+      color:#ef4444;
+      flex-shrink:0;
+    }
+
+    /* Form */
+    .field {
+      display:flex;
+      flex-direction:column;
+      gap:.35rem;
+      margin-bottom:1.1rem;
+      animation:fadeUp .45s var(--ease-out);
+    }
+    .field:nth-of-type(1) { animation-delay:.14s; }
+    .field:nth-of-type(2) { animation-delay:.18s; }
+
+    .field label {
+      font-size:.75rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:600;
+      color:var(--text-secondary);
+    }
+
+    .field input {
+      width:100%;
+      border-radius:var(--radius-lg);
+      border:1px solid var(--border);
+      background:var(--surface-soft);
+      color:var(--text-primary);
+      padding:.6rem .8rem;
+      font-size:.9rem;
+      outline:none;
+      transition:border-color var(--duration-200) var(--ease-out),
+                 box-shadow var(--duration-200) var(--ease-out),
+                 background-color var(--duration-200) var(--ease-out),
+                 transform var(--duration-150) var(--ease-out);
+      transform-origin:center;
+    }
+
+    .field input::placeholder {
+      color:rgba(148,163,184,0.9);
+    }
+
+    .field input:focus {
+      border-color:var(--primary);
+      background:#ffffff;
+      box-shadow:0 0 0 1px rgba(99,102,241,0.35), 0 12px 28px rgba(15,23,42,0.12);
+      transform:translateY(-1px) scale(1.01);
+    }
+
+    .field input:hover:not(:focus) {
+      border-color:rgba(148,163,184,0.9);
+      background:#ffffff;
+    }
+
+    .field-inline {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:.6rem;
+      font-size:.75rem;
+      color:var(--text-muted);
+      animation:fadeUp .45s var(--ease-out) .2s both;
+    }
+
+    .remember-checkbox {
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+      cursor:pointer;
+      user-select:none;
+    }
+    .remember-checkbox input[type="checkbox"] {
+      width:14px;
+      height:14px;
+      accent-color:#6366F1;
+      cursor:pointer;
+    }
+
+    .forgot-link {
+      color:var(--text-secondary);
+      text-decoration:none;
+      font-weight:500;
+      position:relative;
+      overflow:hidden;
+      transition:color var(--duration-200) var(--ease-out);
+    }
+    .forgot-link::after {
+      content:'';
+      position:absolute;
+      left:0;
+      bottom:-2px;
+      width:0;
+      height:1px;
+      background:var(--gradient-primary);
+      transition:width var(--duration-200) var(--ease-out);
+    }
+    .forgot-link:hover {
+      color:var(--primary-dark);
+    }
+    .forgot-link:hover::after {
+      width:100%;
+    }
+
+    /* Button */
+    .button-row {
+      margin-top:1.3rem;
+      display:flex;
+      flex-direction:column;
+      gap:.75rem;
+      animation:fadeUp .45s var(--ease-out) .24s both;
+    }
+
+    .btn-primary {
+      width:100%;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      padding:.7rem .9rem;
+      border-radius:999px;
+      border:none;
+      background:var(--gradient-primary);
+      color:#fff;
+      font-weight:600;
+      font-size:.9rem;
+      cursor:pointer;
+      box-shadow:0 10px 30px rgba(79,70,229,0.35);
+      position:relative;
+      overflow:hidden;
+      transition:transform var(--duration-200) var(--ease-out),
+                 box-shadow var(--duration-200) var(--ease-out),
+                 opacity var(--duration-200) var(--ease-out);
+      transform-origin:center;
+    }
+
+    .btn-primary::before {
+      content:'';
+      position:absolute;
+      top:0;
+      left:-100%;
+      width:100%;
+      height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent);
+      transition:left .6s;
+    }
+
+    .btn-primary:hover {
+      transform:translateY(-2px) scale(1.01);
+      box-shadow:0 14px 40px rgba(79,70,229,0.5);
+    }
+
+    .btn-primary:hover::before {
+      left:100%;
+    }
+
+    .btn-primary:active {
+      transform:translateY(0) scale(0.99);
+      box-shadow:0 10px 26px rgba(79,70,229,0.4);
+      opacity:.98;
+    }
+
+    .btn-primary i {
+      font-size:.85rem;
+      transition:transform var(--duration-150) var(--ease-out);
+    }
+
+    .btn-primary:hover i {
+      transform:translateX(3px);
+    }
+
+    .login-footer {
+      margin-top:1.75rem;
+      text-align:center;
+      font-size:.75rem;
+      color:var(--text-muted);
+      animation:fadeUp .45s var(--ease-out) .3s both;
+    }
+    .login-footer a {
+      color:var(--primary-dark);
+      text-decoration:none;
+      font-weight:500;
+    }
+    .login-footer a:hover {
+      text-decoration:underline;
+    }
+
+    /* Animations */
+    @keyframes fadeInBody {
+      from { opacity:0; }
+      to { opacity:1; }
+    }
+
+    @keyframes cardEnter {
+      from { opacity:0; transform:translateY(18px) scale(0.98); }
+      to { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes floatBlob {
+      0%,100% { transform:translate3d(0,0,0); }
+      50% { transform:translate3d(10px,-20px,0); }
+    }
+
+    @keyframes logoShine {
+      0% { left:-120%; }
+      30% { left:140%; }
+      100% { left:140%; }
+    }
+
+    @keyframes badgePulse {
+      0%,100% { transform:scale(1); box-shadow:0 0 0 4px rgba(34,197,94,0.3); }
+      50% { transform:scale(1.15); box-shadow:0 0 0 6px rgba(34,197,94,0.15); }
+    }
+
+    @keyframes pulseSoft {
+      0%,100% { transform:scale(1); box-shadow:0 0 0 1px rgba(255,255,255,0.7); }
+      50% { transform:scale(1.05); box-shadow:0 0 0 4px rgba(129,140,248,0.4); }
+    }
+
+    /* smooth reveal, no caret */
+    @keyframes typingReveal {
+      from {
+        -webkit-clip-path:inset(0 100% 0 0);
+        clip-path:inset(0 100% 0 0);
+      }
+      to {
+        -webkit-clip-path:inset(0 0 0 0);
+        clip-path:inset(0 0 0 0);
+      }
+    }
+
+    /* animated underline for "next-gen video" */
+    @keyframes underlineLoop {
+      0% { width:0; opacity:0; }
+      20% { width:35%; opacity:1; }
+      60% { width:100%; opacity:1; }
+      100% { width:0; opacity:0; }
+    }
+
+    /* pulsing pill under the hero */
+    @keyframes heroPillPulse {
+      0%,100% { transform:translateY(0) scale(1); box-shadow:0 0 0 0 rgba(99,102,241,0.15); }
+      50% { transform:translateY(-1px) scale(1.03); box-shadow:0 0 0 8px rgba(99,102,241,0.05); }
+    }
+
+    @media (max-width: 600px) {
+      .auth-header {
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .auth-meta {
+        text-align:left;
+      }
+      .login-card {
+        padding:1.9rem 1.5rem 1.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="light">
+  <!-- background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <!-- Brand header -->
+  <header class="auth-header">
+    <div class="brand">
+      <div class="logo">Reelify</div>
+      <div class="tagline">AI-powered story generation</div>
+    </div>
+    <div class="auth-meta">
+      <span>Secure access</span>
+      <span><strong>Sign in to continue</strong></span>
+    </div>
+  </header>
+
+  <!-- Login card -->
+  <main class="login-shell">
+    <section class="login-card">
+      <div class="login-card-inner">
+        <div class="badge-env">
+          <span class="badge-dot"></span>
+          <span>Local development login</span>
+        </div>
+
+        <h1 class="login-title">
+          <span class="login-title-icon">
+            <i class="fas fa-lock"></i>
+          </span>
+          Sign in to your workspace
+        </h1>
+        <p class="login-subtitle">
+          Use your Reelify admin credentials to access the AI story & reel generator.
+        </p>
+
+        <!-- 🔥 Marketing copy with unique animation & font scheme -->
+        <p class="hero-punchline">
+          <span class="hero-line-main">
+            Want to unlock the power of
+            <span class="hero-accent-word"> next-gen video </span>
+            generation
+          </span>
+          <br>
+          <span class="hero-pulse-pill">
+            So what are you waiting for?
+            <i class="fas fa-bolt"></i>
+          </span>
+        </p>
+
+        {% if error %}
+          <div class="error">
+            <i class="fas fa-circle-exclamation"></i>
+            <div>{{ error }}</div>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('login') }}" autocomplete="on">
+          <div class="field">
+            <label for="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              required
+              autofocus
+              placeholder="e.g. admin"
+            >
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              placeholder="Your password"
+            >
+          </div>
+
+          <div class="field-inline">
+            <label class="remember-checkbox">
+              <input type="checkbox" name="remember" value="1">
+              <span>Remember me on this device</span>
+            </label>
+            <a href="#" class="forgot-link" onclick="return false;">Forgot password?</a>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-arrow-right-to-bracket"></i>
+              <span>Sign in</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="login-footer">
+          <span>Tip: default dev user is <strong>admin / changeme123</strong> (update in <code>app.py</code>).</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
